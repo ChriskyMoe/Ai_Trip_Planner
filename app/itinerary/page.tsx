@@ -170,11 +170,18 @@ export default function ItineraryPlanner() {
 
   if (step === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Creating Your Itinerary</h2>
-          <p className="text-gray-600">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        </div>
+        <div className="text-center relative z-10">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full blur-lg opacity-50"></div>
+            <div className="relative animate-spin rounded-full h-20 w-20 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-3">Creating Your Itinerary</h2>
+          <p className="text-lg text-gray-600">
             Our AI is finding the best hotels and creating a personalized trip plan...
           </p>
         </div>
@@ -184,50 +191,59 @@ export default function ItineraryPlanner() {
 
   if (step === 'result' && itinerary) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="container mx-auto px-4 py-8">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        </div>
+
+        <div className="container mx-auto px-4 py-8 relative z-10">
           <div className="mb-6">
             <button
               onClick={() => {
                 setStep('input');
                 setItinerary(null);
               }}
-              className="text-primary-600 hover:text-primary-700 font-medium"
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 font-semibold transition-colors"
             >
-              ← Create New Itinerary
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Create New Itinerary
             </button>
           </div>
 
           {/* Summary */}
-          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 mb-6 border border-white/20">
+            <h1 className="text-4xl font-extrabold text-gray-900 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
               Your {formData.destination} Itinerary
             </h1>
-            <p className="text-gray-700 text-lg">{itinerary.summary}</p>
+            <p className="text-gray-700 text-lg leading-relaxed">{itinerary.summary}</p>
           </div>
 
           {/* Budget Overview */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Total Budget</p>
-              <p className="text-2xl font-bold text-primary-600">
+            <div className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-lg p-6 text-white transform hover:scale-105 transition-transform duration-300">
+              <p className="text-sm opacity-90 mb-2">Total Budget</p>
+              <p className="text-3xl font-bold">
                 {formData.currency} {itinerary.totalBudget.toFixed(2)}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Accommodation</p>
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-shadow">
+              <p className="text-sm text-gray-600 mb-2">Accommodation</p>
               <p className="text-2xl font-bold text-gray-900">
                 {formData.currency} {itinerary.budgetBreakdown.accommodation.toFixed(2)}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Activities</p>
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-shadow">
+              <p className="text-sm text-gray-600 mb-2">Activities</p>
               <p className="text-2xl font-bold text-gray-900">
                 {formData.currency} {itinerary.budgetBreakdown.activities.toFixed(2)}
               </p>
             </div>
-            <div className="bg-white rounded-lg shadow p-4">
-              <p className="text-sm text-gray-600">Meals</p>
+            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg p-6 border border-white/20 hover:shadow-xl transition-shadow">
+              <p className="text-sm text-gray-600 mb-2">Meals</p>
               <p className="text-2xl font-bold text-gray-900">
                 {formData.currency} {itinerary.budgetBreakdown.meals.toFixed(2)}
               </p>
@@ -235,13 +251,13 @@ export default function ItineraryPlanner() {
           </div>
 
           {/* Recommended Hotels */}
-          <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Recommended Hotels</h2>
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 mb-6 border border-white/20">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Recommended Hotels</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {itinerary.hotels.map((hotel, idx) => {
                 const hotelData = hotels.find((h) => h.hotelId === hotel.id || h.name === hotel.name);
                 return (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-4">
+                  <div key={idx} className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100 transform hover:-translate-y-1">
                     {hotelData?.main_photo && (
                       <div className="relative h-32 w-full mb-3 rounded overflow-hidden">
                         <Image
@@ -269,7 +285,7 @@ export default function ItineraryPlanner() {
                     {hotelData?.offerId && (
                       <button
                         onClick={() => handleBookHotel(hotelData)}
-                        className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                       >
                         Book Now
                       </button>
@@ -283,8 +299,8 @@ export default function ItineraryPlanner() {
           {/* Daily Itinerary */}
           <div className="space-y-6">
             {itinerary.itinerary.map((day, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow-md overflow-hidden">
-                <div className="bg-primary-600 text-white p-4">
+              <div key={idx} className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl overflow-hidden border border-white/20 mb-6">
+                <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-6">
                   <h3 className="text-xl font-bold">{day.title}</h3>
                   <p className="text-sm opacity-90">
                     {format(new Date(day.date), 'EEEE, MMMM d, yyyy')} • Budget: {formData.currency}{' '}
@@ -294,11 +310,11 @@ export default function ItineraryPlanner() {
                 <div className="p-6">
                   <div className="space-y-4">
                     {day.activities.map((activity, actIdx) => (
-                      <div key={actIdx} className="border-l-4 border-primary-500 pl-4">
+                      <div key={actIdx} className="border-l-4 border-purple-500 pl-4 bg-gradient-to-r from-purple-50 to-transparent p-4 rounded-r-lg">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold text-primary-600">{activity.time}</span>
+                              <span className="font-semibold text-purple-600">{activity.time}</span>
                               <span className="text-gray-600 text-sm">{activity.duration}</span>
                             </div>
                             <h4 className="font-semibold text-gray-900">{activity.activity}</h4>
@@ -306,7 +322,7 @@ export default function ItineraryPlanner() {
                               <p className="text-sm text-gray-600">📍 {activity.place}</p>
                             )}
                             {activity.localTip && (
-                              <p className="text-sm text-primary-700 mt-2 italic">
+                              <p className="text-sm text-purple-700 mt-2 italic bg-purple-50 p-2 rounded">
                                 💡 {activity.localTip}
                               </p>
                             )}
@@ -358,12 +374,12 @@ export default function ItineraryPlanner() {
 
           {/* Local Insights */}
           {itinerary.localInsights && itinerary.localInsights.length > 0 && (
-            <div className="mt-6 bg-gradient-to-r from-primary-50 to-primary-100 rounded-xl p-6">
+            <div className="mt-6 bg-gradient-to-r from-purple-100 to-pink-100 rounded-3xl p-8 border border-purple-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-4">Local Insights & Tips</h2>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {itinerary.localInsights.map((insight, idx) => (
-                  <li key={idx} className="flex items-start">
-                    <span className="text-primary-600 mr-2">✓</span>
+                  <li key={idx} className="flex items-start bg-white/60 rounded-lg p-3">
+                    <span className="text-purple-600 mr-3 font-bold">✓</span>
                     <span className="text-gray-700">{insight}</span>
                   </li>
                 ))}
@@ -379,17 +395,42 @@ export default function ItineraryPlanner() {
   const tomorrow = format(new Date(Date.now() + 86400000), 'yyyy-MM-dd');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-5xl font-bold text-center text-gray-900 mb-4">
-            AI Trip Planner
-          </h1>
-          <p className="text-xl text-center text-gray-600 mb-12">
-            Get a personalized itinerary with hotels that fit your budget
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </div>
 
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="container mx-auto px-4 py-16 relative z-10">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-6">
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center text-purple-600 hover:text-purple-700 font-semibold transition-colors"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back to Home
+            </button>
+          </div>
+          <div className="text-center mb-12">
+            <div className="inline-block mb-4">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                ✨ AI-Powered Planning
+              </span>
+            </div>
+            <h1 className="text-6xl font-extrabold mb-4 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
+              AI Trip Planner
+            </h1>
+            <p className="text-2xl text-gray-700 font-medium">
+              Get a personalized itinerary with hotels that fit your budget
+            </p>
+          </div>
+
+          <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 {/* Destination */}
@@ -530,7 +571,7 @@ export default function ItineraryPlanner() {
 
                 <button
                   type="submit"
-                  className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors duration-200"
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
                   Generate My Itinerary
                 </button>

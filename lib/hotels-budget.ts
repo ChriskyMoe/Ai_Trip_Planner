@@ -69,6 +69,10 @@ export async function searchHotelsInBudget(params: {
 
     // Filter hotels by budget and validate destination
     const destinationLower = params.destination.toLowerCase();
+    // If placeId was used, trust LiteAPI's location-based results (less strict validation)
+    // If aiSearch was used, be more strict to avoid wrong locations
+    const useStrictValidation = !params.placeId;
+    
     if (ratesData.data) {
       for (const hotelData of ratesData.data) {
         const hotelInfo = hotelMap.get(hotelData.hotelId);
@@ -80,18 +84,28 @@ export async function searchHotelsInBudget(params: {
           
           // Check if price per night is within budget
           if (price <= maxPricePerNight) {
-            // Validate hotel is in the correct destination
-            const hotelAddress = hotelInfo?.address?.toLowerCase() || '';
-            const hotelName = hotelInfo?.name?.toLowerCase() || '';
-            const hotelCity = hotelInfo?.city?.toLowerCase() || '';
+            let isInDestination = true; // Default to true if placeId was used
             
-            // Check if hotel address/name/city contains destination (basic validation)
-            const isInDestination = 
-              hotelAddress.includes(destinationLower) ||
-              hotelCity.includes(destinationLower) ||
-              hotelName.includes(destinationLower) ||
-              !hotelAddress || // If no address, include it (let user decide)
-              !hotelInfo; // If no hotel info, include it
+            // Only validate destination if using aiSearch (text search) or if no placeId
+            if (useStrictValidation) {
+              // Validate hotel is in the correct destination (strict mode)
+              const hotelAddress = hotelInfo?.address?.toLowerCase() || '';
+              const hotelName = hotelInfo?.name?.toLowerCase() || '';
+              const hotelCity = hotelInfo?.city?.toLowerCase() || '';
+              
+              // Extract key words from destination (e.g., "Ko Si Chang" -> ["ko", "si", "chang"])
+              const destinationWords = destinationLower.split(/\s+/).filter(w => w.length > 2);
+              
+              // Check if hotel address/name/city contains destination or key words
+              isInDestination = 
+                hotelAddress.includes(destinationLower) ||
+                hotelCity.includes(destinationLower) ||
+                hotelName.includes(destinationLower) ||
+                destinationWords.some(word => hotelAddress.includes(word) || hotelCity.includes(word)) ||
+                !hotelAddress || // If no address, include it (let user decide)
+                !hotelInfo; // If no hotel info, include it
+            }
+            // If placeId was used, trust LiteAPI's location filtering (isInDestination = true)
             
             // Only add if in destination (or if we can't verify)
             if (isInDestination) {
@@ -106,9 +120,14 @@ export async function searchHotelsInBudget(params: {
                 offerId: roomType.offerId,
               });
             } else {
-              // Log filtered out hotels for debugging
-              console.warn(`Filtered out hotel not in destination: ${hotelInfo?.name} (${hotelInfo?.address}) - searched for: ${params.destination}`);
+              // Log filtered out hotels for debugging (only in strict mode)
+              if (useStrictValidation) {
+                console.warn(`Filtered out hotel not in destination: ${hotelInfo?.name} (${hotelInfo?.address}) - searched for: ${params.destination}`);
+              }
             }
+          } else {
+            // Log if hotel is too expensive (for debugging)
+            console.log(`Hotel ${hotelInfo?.name} excluded: ${price} > ${maxPricePerNight} (budget per night)`);
           }
         }
       }
