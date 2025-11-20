@@ -96,7 +96,7 @@ export default function Home() {
           </p>
           
           {/* Navigation Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
             <div
               onClick={navigateToItinerary}
               className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-primary-200 hover:border-primary-400"
@@ -109,11 +109,31 @@ export default function Home() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">AI Itinerary Planner</h2>
-                  <p className="text-gray-600">Get personalized trip plans with budget-friendly hotels</p>
+                  <p className="text-gray-600">Get personalized trip plans</p>
                 </div>
               </div>
               <p className="text-sm text-gray-500">
-                Enter your budget and destination, and our AI will create a complete itinerary with hotels, activities, and local insights.
+                Enter your budget and destination, and our AI will create a complete itinerary.
+              </p>
+            </div>
+            
+            <div
+              onClick={() => router.push('/flights')}
+              className="bg-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow border-2 border-primary-200 hover:border-primary-400"
+            >
+              <div className="flex items-center mb-4">
+                <div className="bg-primary-100 rounded-lg p-3 mr-4">
+                  <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Flight Booking</h2>
+                  <p className="text-gray-600">Search and book flights</p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Search for flights by origin and destination, compare prices, and book.
               </p>
             </div>
             
@@ -126,11 +146,11 @@ export default function Home() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold text-gray-900">Direct Hotel Search</h2>
-                  <p className="text-gray-600">Search and book hotels directly</p>
+                  <p className="text-gray-600">Search and book hotels</p>
                 </div>
               </div>
               <p className="text-sm text-gray-500">
-                Search by destination or vibe, then browse and book hotels with our standard booking flow.
+                Search by destination or vibe, then browse and book hotels.
               </p>
             </div>
           </div>
