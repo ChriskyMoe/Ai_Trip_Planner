@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import Image from 'next/image';
+import { supabase } from '@/lib/supabaseClient';
 
 interface ItineraryDay {
   day: number;
@@ -59,6 +60,22 @@ export default function ItineraryPlanner() {
   const [error, setError] = useState('');
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [hotels, setHotels] = useState<any[]>([]);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/auth');
+        return;
+      }
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const [formData, setFormData] = useState({
     destination: '',
@@ -76,6 +93,8 @@ export default function ItineraryPlanner() {
 
   // Close suggestions when clicking outside
   useEffect(() => {
+    if (checkingAuth) return;
+    
     const handleClickOutside = (event: MouseEvent) => {
       if (destinationInputRef.current && !destinationInputRef.current.contains(event.target as Node)) {
         setDestinationSuggestions([]);
@@ -86,7 +105,7 @@ export default function ItineraryPlanner() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [checkingAuth]);
 
   const handleDestinationSearch = async (query: string) => {
     setFormData({ ...formData, destination: query });

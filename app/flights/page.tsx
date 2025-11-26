@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabaseClient';
 
 interface Airport {
   iataCode: string;
@@ -46,6 +47,22 @@ export default function FlightsPage() {
   const [step, setStep] = useState<'search' | 'results' | 'loading'>('search');
   const [error, setError] = useState('');
   const [flights, setFlights] = useState<FlightOffer[]>([]);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/auth');
+        return;
+      }
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const [formData, setFormData] = useState({
     origin: '',
@@ -67,6 +84,8 @@ export default function FlightsPage() {
 
   // Close suggestions when clicking outside
   useEffect(() => {
+    if (checkingAuth) return;
+    
     const handleClickOutside = (event: MouseEvent) => {
       if (
         originInputRef.current && !originInputRef.current.contains(event.target as Node) &&
@@ -81,7 +100,7 @@ export default function FlightsPage() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [checkingAuth]);
 
   const handleAirportSearch = async (query: string, type: 'origin' | 'destination') => {
     if (query.length < 2) {
@@ -200,6 +219,15 @@ export default function FlightsPage() {
   };
 
   const today = format(new Date(), 'yyyy-MM-dd');
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-gray-700">Loading...</div>
+      </div>
+    );
+  }
 
   if (step === 'loading') {
     return (

@@ -1,12 +1,53 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function Home() {
   const router = useRouter();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+    };
+    checkAuth();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 relative overflow-hidden">
+      {/* Navigation Header */}
+      <nav className="relative z-20 w-full px-4 py-4">
+        <div className="max-w-7xl mx-auto flex justify-end items-center space-x-4">
+          {isAuthenticated ? (
+            <button
+              onClick={() => router.push("/profile")}
+              className="px-4 py-2 rounded-lg bg-white/80 backdrop-blur-sm text-gray-700 font-medium hover:bg-white transition-colors shadow-sm border border-gray-200"
+            >
+              My Profile
+            </button>
+          ) : (
+            <button
+              onClick={() => router.push("/auth")}
+              className="px-4 py-2 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors shadow-sm"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+      </nav>
       {/* Decorative Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>

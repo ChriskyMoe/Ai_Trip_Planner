@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function HotelSearchPage() {
   const router = useRouter();
@@ -16,6 +17,22 @@ export default function HotelSearchPage() {
   const [checkout, setCheckout] = useState('');
   const [adults, setAdults] = useState(2);
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Check authentication on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace('/auth');
+        return;
+      }
+      setCheckingAuth(false);
+    };
+    checkAuth();
+  }, [router]);
 
   const handlePlaceSearch = async (query: string) => {
     setDestinationQuery(query);
@@ -79,6 +96,15 @@ export default function HotelSearchPage() {
 
   const today = format(new Date(), 'yyyy-MM-dd');
   const tomorrow = format(new Date(Date.now() + 86400000), 'yyyy-MM-dd');
+
+  // Show loading while checking authentication
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+        <div className="text-gray-700">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-emerald-100 relative overflow-hidden">

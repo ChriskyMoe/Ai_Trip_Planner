@@ -9,12 +9,13 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@googlemaps/js-api-loader": "^1.16.6",
+    "@supabase/supabase-js": "^2.48.0",
     "date-fns": "^2.30.0",
     "demon": "^0.0.1",
     "next": "^14.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@googlemaps/js-api-loader": "^1.16.6"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
