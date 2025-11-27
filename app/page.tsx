@@ -32,12 +32,20 @@ export default function Home() {
       <nav className="relative z-20 w-full px-4 py-4">
         <div className="max-w-7xl mx-auto flex justify-end items-center space-x-4">
           {isAuthenticated ? (
-            <button
-              onClick={() => router.push("/profile")}
-              className="px-4 py-2 rounded-lg bg-white/80 backdrop-blur-sm text-gray-700 font-medium hover:bg-white transition-colors shadow-sm border border-gray-200"
-            >
-              My Profile
-            </button>
+            <>
+              <button
+                onClick={() => router.push("/bookings")}
+                className="px-4 py-2 rounded-lg bg-white/80 backdrop-blur-sm text-gray-700 font-medium hover:bg-white transition-colors shadow-sm border border-gray-200"
+              >
+                My Bookings
+              </button>
+              <button
+                onClick={() => router.push("/profile")}
+                className="px-4 py-2 rounded-lg bg-white/80 backdrop-blur-sm text-gray-700 font-medium hover:bg-white transition-colors shadow-sm border border-gray-200"
+              >
+                My Profile
+              </button>
+            </>
           ) : (
             <button
               onClick={() => router.push("/auth")}

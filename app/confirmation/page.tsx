@@ -242,7 +242,13 @@ export default function ConfirmationPage() {
           </div>
 
           {/* Actions */}
-          <div className="text-center">
+          <div className="text-center space-x-4">
+            <button
+              onClick={() => router.push('/bookings')}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"
+            >
+              View My Bookings
+            </button>
             <button
               onClick={() => router.push('/')}
               className="bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors duration-200"

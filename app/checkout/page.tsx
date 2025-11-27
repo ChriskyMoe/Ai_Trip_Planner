@@ -290,7 +290,14 @@ export default function CheckoutPage() {
         <div className="container mx-auto px-4 py-8">
           <div className="max-w-2xl mx-auto">
             <button
-              onClick={() => router.back()}
+              onClick={() => {
+                const returnTo = searchParams.get('returnTo');
+                if (returnTo === 'itinerary') {
+                  router.push('/itinerary');
+                } else {
+                  router.back();
+                }
+              }}
               className="text-primary-600 hover:text-primary-700 font-medium mb-6"
             >
               ← Back
