@@ -63,44 +63,46 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-20 relative z-10">
-        <div className="max-w-7xl mx-auto">
+      <div className="container mx-auto px-4 py-12 md:py-20 relative z-10">
+        <div className="max-w-5xl mx-auto">
           {/* Hero Section */}
-          <div className="text-center mb-20">
-            <div className="inline-block mb-6">
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-primary-100 text-primary-800 border border-primary-200">
-                ✈️ Your All-in-One Travel Solution
+          <div className="text-center mb-16">
+            <div className="inline-block mb-6 animate-fade-in">
+              <span className="inline-flex items-center px-5 py-2.5 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 border border-purple-200 shadow-sm">
+                ✨ AI-Powered Travel Planning
               </span>
             </div>
-            <h1 className="text-7xl font-extrabold mb-6 bg-gradient-to-r from-primary-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
+            <h1 className="text-5xl md:text-7xl font-extrabold mb-6 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent leading-tight animate-fade-in-up">
               Smart Trip Planner
             </h1>
-            <p className="text-3xl font-semibold text-gray-700 mb-6">
-              Plan your perfect trip with AI-powered itineraries
+            <p className="text-2xl md:text-3xl font-semibold text-gray-700 mb-4">
+              Your Perfect Journey, Planned by AI
             </p>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Book flights, find hotels, and create personalized itineraries all
-              in one place. Experience seamless travel planning powered by
-              artificial intelligence.
+            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Create personalized itineraries with hotels, flights, activities, and local insights—all tailored to your budget and preferences.
             </p>
           </div>
 
-          {/* Navigation Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-            {/* AI Itinerary Planner Card */}
+          {/* Main CTA Card - Centered and Prominent */}
+          <div className="max-w-2xl mx-auto mb-16">
             <div
               onClick={() => router.push("/itinerary")}
-              className="group relative bg-white rounded-3xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-purple-300 transform hover:-translate-y-3 overflow-hidden"
+              className="group relative bg-white rounded-3xl shadow-2xl p-10 md:p-12 cursor-pointer hover:shadow-3xl transition-all duration-500 border-2 border-purple-100 hover:border-purple-300 transform hover:-translate-y-2 overflow-hidden"
             >
-              {/* Card Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 to-pink-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              {/* Animated Background Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
+              {/* Decorative Elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-pink-200 rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500"></div>
 
               <div className="relative flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                  <div className="relative bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl p-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                {/* Icon */}
+                <div className="relative mb-8">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-pink-500 rounded-3xl blur-2xl opacity-40 group-hover:opacity-60 transition-opacity duration-500"></div>
+                  <div className="relative bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl p-8 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-xl">
                     <svg
-                      className="w-14 h-14 text-white"
+                      className="w-16 h-16 md:w-20 md:h-20 text-white"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -109,55 +111,29 @@ export default function Home() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                       />
                     </svg>
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-purple-600 transition-colors duration-300">
-                  AI Itinerary Planner
+
+                {/* Content */}
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4 group-hover:text-purple-600 transition-colors duration-300">
+                  Start Planning Your Trip
                 </h2>
-                <p className="text-lg font-medium text-gray-700 mb-4">
-                  Get personalized trip plans powered by AI
+                <p className="text-lg md:text-xl font-medium text-gray-700 mb-6">
+                  Get a complete AI-generated itinerary in seconds
                 </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Enter your budget and destination, and our AI will create a
-                  complete itinerary with hotels, activities, and local
-                  insights.
+                <p className="text-base text-gray-600 leading-relaxed mb-8 max-w-lg">
+                  Simply enter your destination, budget, and travel dates. Our AI will create a personalized itinerary with recommended hotels, flights, activities, meals, and local insights—all perfectly tailored to your preferences.
                 </p>
-                <div className="mt-6 flex items-center text-purple-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>Get Started</span>
-                  <svg
-                    className="w-5 h-5 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
 
-            {/* Flight Booking Card */}
-            <div
-              onClick={() => router.push("/flights")}
-              className="group relative bg-white rounded-3xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-blue-300 transform hover:-translate-y-3 overflow-hidden"
-            >
-              {/* Card Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 to-cyan-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <div className="relative flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                  <div className="relative bg-gradient-to-br from-blue-500 to-cyan-600 rounded-2xl p-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
+                {/* CTA Button */}
+                <button className="group/btn relative bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold py-4 px-10 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 overflow-hidden">
+                  <span className="relative z-10 flex items-center text-lg">
+                    Create My Itinerary
                     <svg
-                      className="w-14 h-14 text-white"
+                      className="w-5 h-5 ml-2 group-hover/btn:translate-x-1 transition-transform duration-300"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -166,108 +142,27 @@ export default function Home() {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                        d="M13 7l5 5m0 0l-5 5m5-5H6"
                       />
                     </svg>
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
-                  Flight Booking
-                </h2>
-                <p className="text-lg font-medium text-gray-700 mb-4">
-                  Search and book flights
-                </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Search for flights by origin and destination, compare prices,
-                  and book your next trip with ease.
-                </p>
-                <div className="mt-6 flex items-center text-blue-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>Book Now</span>
-                  <svg
-                    className="w-5 h-5 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            {/* Hotel Search Card */}
-            <div
-              onClick={() => router.push("/hotels/search")}
-              className="group relative bg-white rounded-3xl shadow-xl p-8 cursor-pointer hover:shadow-2xl transition-all duration-500 border-2 border-transparent hover:border-emerald-300 transform hover:-translate-y-3 overflow-hidden"
-            >
-              {/* Card Background Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-teal-50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-              <div className="relative flex flex-col items-center text-center">
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity duration-500"></div>
-                  <div className="relative bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl p-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-lg">
-                    <svg
-                      className="w-14 h-14 text-white"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-emerald-600 transition-colors duration-300">
-                  Hotel Search
-                </h2>
-                <p className="text-lg font-medium text-gray-700 mb-4">
-                  Find and book hotels
-                </p>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  Search by destination or vibe, browse hotels, and book your
-                  perfect stay with the best prices.
-                </p>
-                <div className="mt-6 flex items-center text-emerald-600 font-semibold group-hover:translate-x-2 transition-transform duration-300">
-                  <span>Explore</span>
-                  <svg
-                    className="w-5 h-5 ml-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </div>
+                  </span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-purple-700 to-pink-700 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300"></div>
+                </button>
               </div>
             </div>
           </div>
 
-          {/* Features Section */}
-          <div className="mt-24 text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Choose Us?
+          {/* Features Section - Redesigned */}
+          <div className="mt-20 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              Why Choose Our AI Trip Planner?
             </h2>
-            <p className="text-xl text-gray-600 mb-12">
-              Everything you need for your perfect trip
+            <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
+              Everything you need for a perfectly planned trip, powered by artificial intelligence
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
                   <svg
                     className="w-8 h-8 text-white"
                     fill="none"
@@ -282,15 +177,15 @@ export default function Home() {
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  AI-Powered
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  AI-Powered Planning
                 </h3>
-                <p className="text-gray-600">
-                  Smart recommendations tailored to your preferences
+                <p className="text-gray-600 leading-relaxed">
+                  Advanced AI creates personalized itineraries based on your budget, preferences, and travel style
                 </p>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1">
+                <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
                   <svg
                     className="w-8 h-8 text-white"
                     fill="none"
@@ -301,19 +196,19 @@ export default function Home() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Best Prices
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Complete Itineraries
                 </h3>
-                <p className="text-gray-600">
-                  Compare and find the best deals on flights and hotels
+                <p className="text-gray-600 leading-relaxed">
+                  Get detailed day-by-day plans with hotels, flights, activities, meals, and local tips
                 </p>
               </div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl flex items-center justify-center mx-auto mb-4">
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow duration-300 hover:-translate-y-1">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
                   <svg
                     className="w-8 h-8 text-white"
                     fill="none"
@@ -324,15 +219,15 @@ export default function Home() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  Secure Booking
+                <h3 className="text-xl font-bold text-gray-900 mb-3">
+                  Save Time
                 </h3>
-                <p className="text-gray-600">
-                  Safe and secure payment processing for all bookings
+                <p className="text-gray-600 leading-relaxed">
+                  No more hours of research—get a complete travel plan in minutes, not days
                 </p>
               </div>
             </div>
