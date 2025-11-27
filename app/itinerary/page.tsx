@@ -54,6 +54,45 @@ interface Itinerary {
   localInsights: string[];
 }
 
+interface FlightOffer {
+  id: string;
+  price: {
+    currency: string;
+    total: string;
+    grandTotal?: string;
+  };
+  itineraries: Array<{
+    duration: string;
+    segments: Array<{
+      departure: {
+        iataCode: string;
+        at: string;
+      };
+      arrival: {
+        iataCode: string;
+        at: string;
+      };
+      carrierCode: string;
+      number: string;
+      duration: string;
+      numberOfStops: number;
+    }>;
+  }>;
+  numberOfBookableSeats: number;
+}
+
+interface AirportSuggestion {
+  iataCode: string;
+  name?: {
+    text: string;
+  } | string;
+  detailedName?: string;
+  address?: {
+    cityName?: string;
+    countryName?: string;
+  };
+}
+
 export default function ItineraryPlanner() {
   const router = useRouter();
   const checkingAuth = useRequireAuth();
@@ -61,6 +100,7 @@ export default function ItineraryPlanner() {
   const [error, setError] = useState('');
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [hotels, setHotels] = useState<any[]>([]);
+  const [flights, setFlights] = useState<FlightOffer[]>([]);
 
   const [formData, setFormData] = useState({
     destination: '',
@@ -70,11 +110,17 @@ export default function ItineraryPlanner() {
     checkout: '',
     adults: '2',
     preferences: '',
+    originAirport: '',
+    destinationAirport: '',
   });
   const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
+  const [originAirportSuggestions, setOriginAirportSuggestions] = useState<AirportSuggestion[]>([]);
+  const [destinationAirportSuggestions, setDestinationAirportSuggestions] = useState<AirportSuggestion[]>([]);
   const [placeId, setPlaceId] = useState('');
   const [placeName, setPlaceName] = useState('');
   const destinationInputRef = useRef<HTMLDivElement>(null);
+  const originAirportInputRef = useRef<HTMLDivElement>(null);
+  const destinationAirportInputRef = useRef<HTMLDivElement>(null);
 
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -83,6 +129,12 @@ export default function ItineraryPlanner() {
     const handleClickOutside = (event: MouseEvent) => {
       if (destinationInputRef.current && !destinationInputRef.current.contains(event.target as Node)) {
         setDestinationSuggestions([]);
+      }
+      if (originAirportInputRef.current && !originAirportInputRef.current.contains(event.target as Node)) {
+        setOriginAirportSuggestions([]);
+      }
+      if (destinationAirportInputRef.current && !destinationAirportInputRef.current.contains(event.target as Node)) {
+        setDestinationAirportSuggestions([]);
       }
     };
 
@@ -114,10 +166,69 @@ export default function ItineraryPlanner() {
     setDestinationSuggestions([]);
   };
 
+  const handleAirportSearch = async (query: string, type: 'origin' | 'destination') => {
+    if (query.length < 2) {
+      if (type === 'origin') {
+        setOriginAirportSuggestions([]);
+      } else {
+        setDestinationAirportSuggestions([]);
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/flights/airports?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+
+      if (type === 'origin') {
+        setOriginAirportSuggestions(data.data || []);
+      } else {
+        setDestinationAirportSuggestions(data.data || []);
+      }
+    } catch (error) {
+      console.error('Error searching airports:', error);
+    }
+  };
+
+  const handleAirportSelect = (airport: AirportSuggestion, type: 'origin' | 'destination') => {
+    const code = airport.iataCode?.toUpperCase();
+    if (!code) return;
+
+    if (type === 'origin') {
+      setFormData({ ...formData, originAirport: code });
+      setOriginAirportSuggestions([]);
+    } else {
+      setFormData({ ...formData, destinationAirport: code });
+      setDestinationAirportSuggestions([]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setStep('loading');
+
+    const airportCodeRegex = /^[A-Z]{3}$/;
+    const normalizedOriginAirport = (formData.originAirport || '').trim().toUpperCase();
+    const normalizedDestinationAirport = (formData.destinationAirport || '').trim().toUpperCase();
+
+    if (
+      (normalizedOriginAirport && !airportCodeRegex.test(normalizedOriginAirport)) ||
+      (normalizedDestinationAirport && !airportCodeRegex.test(normalizedDestinationAirport))
+    ) {
+      setError('Airport codes must be valid 3-letter IATA codes (e.g., JFK, LHR).');
+      setStep('input');
+      return;
+    }
+
+    if (
+      (normalizedOriginAirport && !normalizedDestinationAirport) ||
+      (!normalizedOriginAirport && normalizedDestinationAirport)
+    ) {
+      setError('Please provide both origin and destination airports to fetch flight suggestions.');
+      setStep('input');
+      return;
+    }
 
     try {
       // Use placeName if available (from autocomplete), otherwise use destination
@@ -135,6 +246,8 @@ export default function ItineraryPlanner() {
           checkout: formData.checkout,
           adults: parseInt(formData.adults),
           preferences: formData.preferences || undefined,
+          originAirport: normalizedOriginAirport || undefined,
+          destinationAirport: normalizedDestinationAirport || undefined,
         }),
       });
 
@@ -148,6 +261,7 @@ export default function ItineraryPlanner() {
 
       setItinerary(data.itinerary);
       setHotels(data.hotels || []);
+      setFlights(data.flights || []);
       setStep('result');
     } catch (err: any) {
       setError(err.message || 'Failed to generate itinerary');
@@ -170,6 +284,20 @@ export default function ItineraryPlanner() {
     });
 
     router.push(`/checkout?${params.toString()}`);
+  };
+
+  const handleSelectFlight = (flight: FlightOffer) => {
+    if (typeof window === 'undefined') return;
+
+    const flightData = {
+      id: flight.id,
+      price: flight.price,
+      itineraries: flight.itineraries,
+      numberOfBookableSeats: flight.numberOfBookableSeats,
+    };
+
+    localStorage.setItem('selectedFlight', JSON.stringify(flightData));
+    router.push(`/flights/booking?flightId=${flight.id}`);
   };
 
   if (checkingAuth) {
@@ -216,6 +344,7 @@ export default function ItineraryPlanner() {
               onClick={() => {
                 setStep('input');
                 setItinerary(null);
+                setFlights([]);
               }}
               className="inline-flex items-center text-purple-600 hover:text-purple-700 font-semibold transition-colors"
             >
@@ -307,6 +436,66 @@ export default function ItineraryPlanner() {
               })}
             </div>
           </div>
+
+          {/* Recommended Flights */}
+          {flights.length > 0 && (
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 mb-6 border border-white/20">
+              <h2 className="text-3xl font-bold text-gray-900 mb-6">Recommended Flights</h2>
+              <div className="space-y-4">
+                {flights.map((flight) => {
+                  const outbound = flight.itineraries[0];
+                  const returnFlight = flight.itineraries[1];
+                  const totalPrice = parseFloat(flight.price.grandTotal || flight.price.total);
+
+                  return (
+                    <div key={flight.id} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="mb-3">
+                            <p className="text-sm text-gray-500">Outbound</p>
+                            <p className="text-xl font-semibold text-gray-900">
+                              {outbound.segments[0].departure.iataCode} → {outbound.segments[outbound.segments.length - 1].arrival.iataCode}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {format(new Date(outbound.segments[0].departure.at), 'MMM d, h:mm a')} • {outbound.duration.replace('PT', '').toLowerCase()}
+                            </p>
+                          </div>
+                          {returnFlight && (
+                            <div>
+                              <p className="text-sm text-gray-500">Return</p>
+                              <p className="text-xl font-semibold text-gray-900">
+                                {returnFlight.segments[0].departure.iataCode} → {returnFlight.segments[returnFlight.segments.length - 1].arrival.iataCode}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {format(new Date(returnFlight.segments[0].departure.at), 'MMM d, h:mm a')} • {returnFlight.duration.replace('PT', '').toLowerCase()}
+                              </p>
+                            </div>
+                          )}
+                          {typeof flight.numberOfBookableSeats === 'number' && flight.numberOfBookableSeats > 0 && (
+                            <div className="mt-2 text-sm text-gray-500">
+                              <span>{flight.numberOfBookableSeats} seats left</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          <p className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                            {flight.price.currency} {totalPrice.toFixed(2)}
+                          </p>
+                          <p className="text-sm text-gray-500 mb-4">per traveler (via Amadeus)</p>
+                          <button
+                            onClick={() => handleSelectFlight(flight)}
+                            className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                          >
+                            Book Flight
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Daily Itinerary */}
           <div className="space-y-6">
@@ -479,6 +668,107 @@ export default function ItineraryPlanner() {
                     </div>
                   )}
                 </div>
+
+                {/* Flights */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="relative" ref={originAirportInputRef}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Departure Airport (IATA)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.originAirport}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase();
+                        setFormData({ ...formData, originAirport: value });
+                        handleAirportSearch(value, 'origin');
+                      }}
+                      onFocus={(e) => {
+                        if (e.target.value.length >= 2) {
+                          handleAirportSearch(e.target.value, 'origin');
+                        }
+                      }}
+                      placeholder="e.g., JFK"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    {originAirportSuggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {originAirportSuggestions.map((airport, idx) => {
+                          const displayName =
+                            typeof airport.name === 'string' ? airport.name : airport.name?.text;
+                          const locationText = [airport.address?.cityName, airport.address?.countryName]
+                            .filter(Boolean)
+                            .join(', ');
+                          return (
+                            <button
+                              key={`${airport.iataCode}-${idx}`}
+                              type="button"
+                              onClick={() => handleAirportSelect(airport, 'origin')}
+                              className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="font-medium text-gray-900">
+                                {airport.iataCode} • {displayName || airport.detailedName || 'Airport'}
+                              </div>
+                              {locationText && (
+                                <div className="text-sm text-gray-500">{locationText}</div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <div className="relative" ref={destinationAirportInputRef}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Arrival Airport (IATA)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.destinationAirport}
+                      onChange={(e) => {
+                        const value = e.target.value.toUpperCase();
+                        setFormData({ ...formData, destinationAirport: value });
+                        handleAirportSearch(value, 'destination');
+                      }}
+                      onFocus={(e) => {
+                        if (e.target.value.length >= 2) {
+                          handleAirportSearch(e.target.value, 'destination');
+                        }
+                      }}
+                      placeholder="e.g., CDG"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    />
+                    {destinationAirportSuggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {destinationAirportSuggestions.map((airport, idx) => {
+                          const displayName =
+                            typeof airport.name === 'string' ? airport.name : airport.name?.text;
+                          const locationText = [airport.address?.cityName, airport.address?.countryName]
+                            .filter(Boolean)
+                            .join(', ');
+                          return (
+                            <button
+                              key={`${airport.iataCode}-${idx}`}
+                              type="button"
+                              onClick={() => handleAirportSelect(airport, 'destination')}
+                              className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                            >
+                              <div className="font-medium text-gray-900">
+                                {airport.iataCode} • {displayName || airport.detailedName || 'Airport'}
+                              </div>
+                              {locationText && (
+                                <div className="text-sm text-gray-500">{locationText}</div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <p className="text-sm text-gray-500">
+                  Add airport codes to get live flight suggestions via Amadeus (optional but recommended).
+                </p>
 
                 {/* Budget */}
                 <div className="grid grid-cols-2 gap-4">
