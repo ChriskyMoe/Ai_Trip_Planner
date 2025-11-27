@@ -1,18 +1,18 @@
-/**
- * Amadeus Flight API Integration
- * Get your API key from: https://developers.amadeus.com/
- *
- * Free tier: $200 credit/month
- */
-
-const AMADEUS_API_KEY = process.env.AMADEUS_API_KEY || "";
-const AMADEUS_API_SECRET = process.env.AMADEUS_API_SECRET || "";
+const AMADEUS_API_KEY = process.env.AMADEUS_API_KEY;
+const AMADEUS_API_SECRET = process.env.AMADEUS_API_SECRET;
 const AMADEUS_API_URL = "https://test.api.amadeus.com"; // Use 'api.amadeus.com' for production
 
 let accessToken: string | null = null;
 let tokenExpiry: number = 0;
 
-const FALLBACK_AIRPORTS = [
+type FallbackAirport = {
+  iataCode: string;
+  detailedName: string;
+  name: { text: string } | string;
+  address: { cityName?: string; countryName?: string };
+};
+
+const FALLBACK_AIRPORTS: FallbackAirport[] = [
   {
     iataCode: "BKK",
     detailedName: "Suvarnabhumi International Airport",
@@ -24,6 +24,12 @@ const FALLBACK_AIRPORTS = [
     detailedName: "Don Mueang International Airport",
     name: { text: "Don Mueang International Airport" },
     address: { cityName: "Bangkok", countryName: "Thailand" },
+  },
+  {
+    iataCode: "CNX",
+    detailedName: "Chiang Mai International Airport",
+    name: { text: "Chiang Mai International Airport" },
+    address: { cityName: "Chiang Mai", countryName: "Thailand" },
   },
   {
     iataCode: "CDG",
@@ -99,7 +105,7 @@ function filterFallbackAirports(query: string) {
 async function getAccessToken(): Promise<string> {
   // Check if we have a valid token
   if (accessToken && Date.now() < tokenExpiry) {
-    return accessToken;
+    return accessToken!;
   }
 
   if (!AMADEUS_API_KEY || !AMADEUS_API_SECRET) {
@@ -133,7 +139,7 @@ async function getAccessToken(): Promise<string> {
     // Token expires in data.expires_in seconds, set expiry 5 minutes early for safety
     tokenExpiry = Date.now() + (data.expires_in - 300) * 1000;
 
-    return accessToken;
+    return accessToken!;
   } catch (error: any) {
     console.error("Amadeus token error:", error);
     throw new Error(`Failed to authenticate with Amadeus: ${error.message}`);
@@ -226,7 +232,9 @@ export async function searchFlights(
   params: FlightSearchParams
 ): Promise<FlightOffer[]> {
   if (!AMADEUS_API_KEY || !AMADEUS_API_SECRET) {
-    console.warn("Amadeus API not configured, returning empty results");
+    console.warn(
+      "[Amadeus] searchFlights skipped: missing AMADEUS_API_KEY/SECRET (using fallback: none)"
+    );
     return [];
   }
 
@@ -280,7 +288,15 @@ export async function searchFlights(
     }
 
     const data = await response.json();
-    return data.data || [];
+    const offers = data.data || [];
+    console.log(
+      `[Amadeus] searchFlights ${params.originLocationCode}->${
+        params.destinationLocationCode
+      } (${params.departureDate}${
+        params.returnDate ? " / " + params.returnDate : ""
+      }): ${offers.length} offers`
+    );
+    return offers;
   } catch (error: any) {
     console.error("Error searching flights:", error);
     throw error;
@@ -292,6 +308,9 @@ export async function searchFlights(
  */
 export async function searchAirports(query: string): Promise<any[]> {
   if (!AMADEUS_API_KEY || !AMADEUS_API_SECRET) {
+    console.warn(
+      `[Amadeus] searchAirports("${query}") using fallback: missing env keys`
+    );
     return filterFallbackAirports(query);
   }
 
@@ -301,7 +320,7 @@ export async function searchAirports(query: string): Promise<any[]> {
     const response = await fetch(
       `${AMADEUS_API_URL}/v1/reference-data/locations?subType=AIRPORT,CITY&keyword=${encodeURIComponent(
         query
-      )}&max=10`,
+      )}&page%5Blimit%5D=10`,
       {
         method: "GET",
         headers: {
@@ -311,14 +330,24 @@ export async function searchAirports(query: string): Promise<any[]> {
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(
+        `[Amadeus] searchAirports("${query}") failed: ${response.status} ${errorText}`
+      );
       return filterFallbackAirports(query);
     }
 
     const data = await response.json();
     const results = data.data || [];
     if (results.length === 0) {
+      console.warn(
+        `[Amadeus] searchAirports("${query}") returned 0 results, using fallback`
+      );
       return filterFallbackAirports(query);
     }
+    console.log(
+      `[Amadeus] searchAirports("${query}") returned ${results.length} results`
+    );
     return results;
   } catch (error) {
     console.error("Error searching airports:", error);

@@ -998,6 +998,7 @@ export default function ItineraryPlanner() {
                       <option value="JPY">JPY (¥)</option>
                       <option value="CAD">CAD (C$)</option>
                       <option value="AUD">AUD (A$)</option>
+                      <option value="THB">THB (฿)</option>
                     </select>
                   </div>
                 </div>
