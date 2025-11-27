@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supabase } from '@/lib/supabaseClient';
 
 interface FlightData {
   id: string;
@@ -88,6 +89,32 @@ export default function FlightBookingPage() {
         bookingDate: new Date().toISOString(),
       };
 
+      // Save to Supabase
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const saveResponse = await fetch('/api/bookings/flight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: session.user.id,
+              bookingData,
+            }),
+          });
+
+          if (!saveResponse.ok) {
+            console.error('Failed to save flight booking to Supabase, but continuing...');
+          }
+        }
+      } catch (saveError) {
+        console.error('Error saving flight booking to Supabase:', saveError);
+        // Continue even if Supabase save fails
+      }
+
+      // Keep localStorage as backup for now (can be removed later)
       localStorage.setItem(`flight_booking_${bookingData.bookingId}`, JSON.stringify(bookingData));
       
       // Navigate to confirmation

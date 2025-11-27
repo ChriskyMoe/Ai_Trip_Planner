@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supabase } from '@/lib/supabaseClient';
 
 interface FlightBooking {
   bookingId: string;
@@ -50,18 +51,64 @@ export default function FlightConfirmationPage() {
   useEffect(() => {
     if (checkingAuth) return;
 
-    const bookingId = searchParams.get('bookingId');
-    if (!bookingId) {
-      setLoading(false);
-      return;
-    }
+    const loadBooking = async () => {
+      const bookingId = searchParams.get('bookingId');
+      if (!bookingId) {
+        setLoading(false);
+        return;
+      }
 
-    // Load booking from localStorage
-    const storedBooking = localStorage.getItem(`flight_booking_${bookingId}`);
-    if (storedBooking) {
-      setBooking(JSON.parse(storedBooking));
-    }
-    setLoading(false);
+      try {
+        // Try to get booking from Supabase first
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const { data: bookingData, error: bookingError } = await supabase
+            .from('flight_bookings')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .eq('booking_id', bookingId)
+            .single();
+
+          if (!bookingError && bookingData) {
+            // Use booking_data if available, otherwise reconstruct
+            if (bookingData.booking_data) {
+              setBooking(bookingData.booking_data);
+            } else {
+              setBooking({
+                bookingId: bookingData.booking_id,
+                flightId: bookingData.flight_id,
+                status: bookingData.status,
+                passenger: bookingData.passenger,
+                flight: bookingData.flight_data,
+                bookingDate: bookingData.booking_date,
+              });
+            }
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fallback to localStorage
+        const storedBooking = localStorage.getItem(`flight_booking_${bookingId}`);
+        if (storedBooking) {
+          setBooking(JSON.parse(storedBooking));
+        }
+      } catch (err) {
+        console.error('Error loading booking:', err);
+        // Fallback to localStorage
+        const storedBooking = localStorage.getItem(`flight_booking_${bookingId}`);
+        if (storedBooking) {
+          setBooking(JSON.parse(storedBooking));
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBooking();
   }, [searchParams, checkingAuth]);
 
   if (checkingAuth) {

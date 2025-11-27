@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supabase } from '@/lib/supabaseClient';
 import Image from 'next/image';
 
 interface HotelBooking {
@@ -69,53 +70,81 @@ export default function BookingsPage() {
   useEffect(() => {
     if (checkingAuth) return;
 
-    // Load all bookings from localStorage
-    const loadBookings = () => {
-      const hotelBookingsList: HotelBooking[] = [];
-      const flightBookingsList: FlightBooking[] = [];
+    const loadBookings = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      // Get all localStorage keys
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key) continue;
-
-        try {
-          if (key.startsWith('booking_')) {
-            const bookingId = key.replace('booking_', '');
-            const bookingData = localStorage.getItem(key);
-            if (bookingData) {
-              const booking = JSON.parse(bookingData);
-              hotelBookingsList.push(booking);
-            }
-          } else if (key.startsWith('flight_booking_')) {
-            const bookingId = key.replace('flight_booking_', '');
-            const bookingData = localStorage.getItem(key);
-            if (bookingData) {
-              const booking = JSON.parse(bookingData);
-              flightBookingsList.push(booking);
-            }
-          }
-        } catch (err) {
-          console.error(`Error parsing booking ${key}:`, err);
+        if (!session?.user) {
+          setLoading(false);
+          return;
         }
+
+        // Load hotel bookings from Supabase
+        const { data: hotelBookingsData, error: hotelError } = await supabase
+          .from('hotel_bookings')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (hotelError) {
+          console.error('Error loading hotel bookings:', hotelError);
+        } else {
+          const hotelBookingsList: HotelBooking[] = (hotelBookingsData || []).map((booking: any) => {
+            // Use booking_data if available, otherwise reconstruct from fields
+            if (booking.booking_data) {
+              return booking.booking_data;
+            }
+            return {
+              bookingId: booking.booking_id,
+              status: booking.status,
+              hotelConfirmationCode: booking.hotel_confirmation_code,
+              checkin: booking.checkin,
+              checkout: booking.checkout,
+              hotel: {
+                hotelId: booking.hotel_id,
+                name: booking.hotel_name,
+              },
+              price: booking.price,
+              currency: booking.currency,
+              cancellationPolicies: booking.cancellation_policies || {},
+            };
+          });
+          setHotelBookings(hotelBookingsList);
+        }
+
+        // Load flight bookings from Supabase
+        const { data: flightBookingsData, error: flightError } = await supabase
+          .from('flight_bookings')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .order('created_at', { ascending: false });
+
+        if (flightError) {
+          console.error('Error loading flight bookings:', flightError);
+        } else {
+          const flightBookingsList: FlightBooking[] = (flightBookingsData || []).map((booking: any) => {
+            // Use booking_data if available, otherwise reconstruct from fields
+            if (booking.booking_data) {
+              return booking.booking_data;
+            }
+            return {
+              bookingId: booking.booking_id,
+              flightId: booking.flight_id,
+              status: booking.status,
+              passenger: booking.passenger,
+              flight: booking.flight_data,
+              bookingDate: booking.booking_date,
+            };
+          });
+          setFlightBookings(flightBookingsList);
+        }
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+      } finally {
+        setLoading(false);
       }
-
-      // Sort by booking date (most recent first)
-      hotelBookingsList.sort((a, b) => {
-        const dateA = new Date(a.checkin).getTime();
-        const dateB = new Date(b.checkin).getTime();
-        return dateB - dateA;
-      });
-
-      flightBookingsList.sort((a, b) => {
-        const dateA = new Date(a.bookingDate).getTime();
-        const dateB = new Date(b.bookingDate).getTime();
-        return dateB - dateA;
-      });
-
-      setHotelBookings(hotelBookingsList);
-      setFlightBookings(flightBookingsList);
-      setLoading(false);
     };
 
     loadBookings();

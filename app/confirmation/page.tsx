@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supabase } from '@/lib/supabaseClient';
 
 interface BookingData {
   bookingId: string;
@@ -52,12 +53,50 @@ export default function ConfirmationPage() {
           return;
         }
 
-        // Try to get booking data from localStorage
-        const storedBooking = localStorage.getItem(`booking_${bookingId}`);
+        // Try to get booking data from Supabase first, then fallback to localStorage
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         let booking: BookingData | null = null;
 
-        if (storedBooking) {
-          booking = JSON.parse(storedBooking);
+        if (session?.user) {
+          const { data: bookingData, error: bookingError } = await supabase
+            .from('hotel_bookings')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .eq('booking_id', bookingId)
+            .single();
+
+          if (!bookingError && bookingData) {
+            // Use booking_data if available, otherwise reconstruct
+            if (bookingData.booking_data) {
+              booking = bookingData.booking_data;
+            } else {
+              booking = {
+                bookingId: bookingData.booking_id,
+                status: bookingData.status,
+                hotelConfirmationCode: bookingData.hotel_confirmation_code,
+                checkin: bookingData.checkin,
+                checkout: bookingData.checkout,
+                hotel: {
+                  hotelId: bookingData.hotel_id,
+                  name: bookingData.hotel_name,
+                },
+                price: bookingData.price,
+                currency: bookingData.currency,
+                cancellationPolicies: bookingData.cancellation_policies || {},
+              };
+            }
+          }
+        }
+
+        // Fallback to localStorage if not found in Supabase
+        if (!booking) {
+          const storedBooking = localStorage.getItem(`booking_${bookingId}`);
+          if (storedBooking) {
+            booking = JSON.parse(storedBooking);
+          }
         }
 
         if (!booking) {

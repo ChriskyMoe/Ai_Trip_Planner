@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
+import { supabase } from '@/lib/supabaseClient';
 
 interface PrebookData {
   prebookId: string;
@@ -147,6 +148,32 @@ export default function CheckoutPage() {
         cancellationPolicies: data.data.cancellationPolicies,
       };
       
+      // Save to Supabase
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          const saveResponse = await fetch('/api/bookings/hotel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: session.user.id,
+              bookingData: bookingInfo,
+            }),
+          });
+
+          if (!saveResponse.ok) {
+            console.error('Failed to save booking to Supabase, but continuing...');
+          }
+        }
+      } catch (saveError) {
+        console.error('Error saving booking to Supabase:', saveError);
+        // Continue even if Supabase save fails
+      }
+
+      // Keep localStorage as backup for now (can be removed later)
       localStorage.setItem(`booking_${bookingId}`, JSON.stringify(bookingInfo));
       
       // Mark booking as completed in localStorage to prevent duplicates on page reload

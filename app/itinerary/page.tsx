@@ -647,14 +647,17 @@ export default function ItineraryPlanner() {
 
     // Store itinerary state before navigating to checkout
     if (itinerary && step === "result") {
-      sessionStorage.setItem("itineraryState", JSON.stringify({
-        itinerary,
-        hotels,
-        flights,
-        formData,
-        savedItineraryId,
-        saveStatus,
-      }));
+      sessionStorage.setItem(
+        "itineraryState",
+        JSON.stringify({
+          itinerary,
+          hotels,
+          flights,
+          formData,
+          savedItineraryId,
+          saveStatus,
+        })
+      );
     }
 
     const params = new URLSearchParams({
@@ -674,14 +677,17 @@ export default function ItineraryPlanner() {
 
     // Store itinerary state before navigating to flight booking
     if (itinerary && step === "result") {
-      sessionStorage.setItem("itineraryState", JSON.stringify({
-        itinerary,
-        hotels,
-        flights,
-        formData,
-        savedItineraryId,
-        saveStatus,
-      }));
+      sessionStorage.setItem(
+        "itineraryState",
+        JSON.stringify({
+          itinerary,
+          hotels,
+          flights,
+          formData,
+          savedItineraryId,
+          saveStatus,
+        })
+      );
     }
 
     const flightData = {
@@ -772,20 +778,12 @@ export default function ItineraryPlanner() {
               </svg>
               Create New Itinerary
             </button>
-            <div className="flex items-center gap-4">
-              <Link
-                href="/bookings"
-                className="inline-flex items-center text-sm font-semibold text-purple-500 hover:text-purple-600"
-              >
-                My Bookings →
-              </Link>
-              <Link
-                href="/history"
-                className="inline-flex items-center text-sm font-semibold text-purple-500 hover:text-purple-600"
-              >
-                View History →
-              </Link>
-            </div>
+            <Link
+              href="/history"
+              className="inline-flex items-center text-sm font-semibold text-purple-500 hover:text-purple-600"
+            >
+              View History →
+            </Link>
           </div>
 
           {/* Summary */}
@@ -1079,11 +1077,11 @@ export default function ItineraryPlanner() {
                                 </span>
                               )}
                             </div>
-                            {meal.cost !== undefined && (
+                            {/* {meal.cost !== undefined && (
                               <span className="text-gray-700">
                                 {formData.currency} {meal.cost.toFixed(2)}
                               </span>
-                            )}
+                            )} */}
                           </div>
                         ))}
                       </div>
