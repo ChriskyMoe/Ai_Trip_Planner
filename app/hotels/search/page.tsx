@@ -3,10 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { supabase } from '@/lib/supabaseClient';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 export default function HotelSearchPage() {
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [searchType, setSearchType] = useState<'destination' | 'vibe'>('destination');
   const [destinationQuery, setDestinationQuery] = useState('');
   const [vibeQuery, setVibeQuery] = useState('');
@@ -17,22 +18,6 @@ export default function HotelSearchPage() {
   const [checkout, setCheckout] = useState('');
   const [adults, setAdults] = useState(2);
   const [loading, setLoading] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace('/auth');
-        return;
-      }
-      setCheckingAuth(false);
-    };
-    checkAuth();
-  }, [router]);
 
   const handlePlaceSearch = async (query: string) => {
     setDestinationQuery(query);

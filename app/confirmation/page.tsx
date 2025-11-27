@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface BookingData {
   bookingId: string;
@@ -33,12 +34,15 @@ interface HotelDetails {
 export default function ConfirmationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [hotelDetails, setHotelDetails] = useState<HotelDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (checkingAuth) return;
+
     const loadConfirmation = async () => {
       try {
         const bookingId = searchParams.get('bookingId');
@@ -81,7 +85,15 @@ export default function ConfirmationPage() {
     };
 
     loadConfirmation();
-  }, [searchParams]);
+  }, [searchParams, checkingAuth]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-600">Verifying your session...</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

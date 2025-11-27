@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface Rate {
   name: string;
@@ -47,12 +48,15 @@ interface GroupedRoom {
 export default function HotelPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [hotelDetails, setHotelDetails] = useState<HotelDetails | null>(null);
   const [groupedRooms, setGroupedRooms] = useState<GroupedRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (checkingAuth) return;
+
     const loadHotel = async () => {
       try {
         setLoading(true);
@@ -136,13 +140,21 @@ export default function HotelPage() {
     };
 
     loadHotel();
-  }, [searchParams]);
+  }, [searchParams, checkingAuth]);
 
   const handleBookOffer = (offerId: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('offerId', offerId);
     router.push(`/checkout?${params.toString()}`);
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-600">Verifying your session...</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

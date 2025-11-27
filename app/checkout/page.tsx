@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Script from 'next/script';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface PrebookData {
   prebookId: string;
@@ -22,6 +23,7 @@ declare global {
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [step, setStep] = useState<'details' | 'payment'>('details');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -273,6 +275,14 @@ export default function CheckoutPage() {
     }
   };
 
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-600">Verifying your session...</div>
+      </div>
+    );
+  }
 
   if (step === 'details') {
     return (

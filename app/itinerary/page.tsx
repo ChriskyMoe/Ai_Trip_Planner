@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabaseClient';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface ItineraryDay {
   day: number;
@@ -56,26 +56,11 @@ interface Itinerary {
 
 export default function ItineraryPlanner() {
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [step, setStep] = useState<'input' | 'loading' | 'result'>('input');
   const [error, setError] = useState('');
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [hotels, setHotels] = useState<any[]>([]);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace('/auth');
-        return;
-      }
-      setCheckingAuth(false);
-    };
-    checkAuth();
-  }, [router]);
 
   const [formData, setFormData] = useState({
     destination: '',
@@ -186,6 +171,14 @@ export default function ItineraryPlanner() {
 
     router.push(`/checkout?${params.toString()}`);
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-purple-100 flex items-center justify-center">
+        <div className="text-gray-700">Verifying your session...</div>
+      </div>
+    );
+  }
 
   if (step === 'loading') {
     return (

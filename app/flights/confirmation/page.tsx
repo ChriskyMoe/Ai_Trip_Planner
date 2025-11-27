@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface FlightBooking {
   bookingId: string;
@@ -42,10 +43,13 @@ interface FlightData {
 export default function FlightConfirmationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [booking, setBooking] = useState<FlightBooking | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (checkingAuth) return;
+
     const bookingId = searchParams.get('bookingId');
     if (!bookingId) {
       setLoading(false);
@@ -58,7 +62,15 @@ export default function FlightConfirmationPage() {
       setBooking(JSON.parse(storedBooking));
     }
     setLoading(false);
-  }, [searchParams]);
+  }, [searchParams, checkingAuth]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center text-gray-600">Verifying your session...</div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

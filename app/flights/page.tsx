@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
-import { supabase } from '@/lib/supabaseClient';
+import { useRequireAuth } from '@/hooks/useRequireAuth';
 
 interface Airport {
   iataCode: string;
@@ -44,25 +44,10 @@ interface FlightOffer {
 
 export default function FlightsPage() {
   const router = useRouter();
+  const checkingAuth = useRequireAuth();
   const [step, setStep] = useState<'search' | 'results' | 'loading'>('search');
   const [error, setError] = useState('');
   const [flights, setFlights] = useState<FlightOffer[]>([]);
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  // Check authentication on mount
-  useEffect(() => {
-    const checkAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace('/auth');
-        return;
-      }
-      setCheckingAuth(false);
-    };
-    checkAuth();
-  }, [router]);
 
   const [formData, setFormData] = useState({
     origin: '',
