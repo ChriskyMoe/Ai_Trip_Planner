@@ -104,6 +104,7 @@ export default function ItineraryPlanner() {
 
   const [formData, setFormData] = useState({
     destination: '',
+    fromCity: '',
     budget: '',
     currency: 'USD',
     checkin: '',
@@ -114,11 +115,21 @@ export default function ItineraryPlanner() {
     destinationAirport: '',
   });
   const [destinationSuggestions, setDestinationSuggestions] = useState<any[]>([]);
+  const [fromCitySuggestions, setFromCitySuggestions] = useState<any[]>([]);
   const [originAirportSuggestions, setOriginAirportSuggestions] = useState<AirportSuggestion[]>([]);
   const [destinationAirportSuggestions, setDestinationAirportSuggestions] = useState<AirportSuggestion[]>([]);
+  const [airportInputs, setAirportInputs] = useState({
+    origin: '',
+    destination: '',
+  });
+  const [selectedAirportLabels, setSelectedAirportLabels] = useState({
+    origin: '',
+    destination: '',
+  });
   const [placeId, setPlaceId] = useState('');
   const [placeName, setPlaceName] = useState('');
   const destinationInputRef = useRef<HTMLDivElement>(null);
+  const fromCityInputRef = useRef<HTMLDivElement>(null);
   const originAirportInputRef = useRef<HTMLDivElement>(null);
   const destinationAirportInputRef = useRef<HTMLDivElement>(null);
 
@@ -129,6 +140,9 @@ export default function ItineraryPlanner() {
     const handleClickOutside = (event: MouseEvent) => {
       if (destinationInputRef.current && !destinationInputRef.current.contains(event.target as Node)) {
         setDestinationSuggestions([]);
+      }
+      if (fromCityInputRef.current && !fromCityInputRef.current.contains(event.target as Node)) {
+        setFromCitySuggestions([]);
       }
       if (originAirportInputRef.current && !originAirportInputRef.current.contains(event.target as Node)) {
         setOriginAirportSuggestions([]);
@@ -145,7 +159,14 @@ export default function ItineraryPlanner() {
   }, [checkingAuth]);
 
   const handleDestinationSearch = async (query: string) => {
-    setFormData({ ...formData, destination: query });
+    setFormData((prev) => ({
+      ...prev,
+      destination: query,
+      destinationAirport: '',
+    }));
+    setAirportInputs((prev) => ({ ...prev, destination: '' }));
+    setSelectedAirportLabels((prev) => ({ ...prev, destination: '' }));
+
     if (query.length < 2) {
       setDestinationSuggestions([]);
       return;
@@ -162,12 +183,55 @@ export default function ItineraryPlanner() {
   const handleDestinationSelect = (place: any) => {
     setPlaceId(place.placeId);
     setPlaceName(place.displayName);
-    setFormData({ ...formData, destination: place.displayName });
+    setFormData((prev) => ({
+      ...prev,
+      destination: place.displayName,
+      destinationAirport: '',
+    }));
+    setAirportInputs((prev) => ({ ...prev, destination: '' }));
+    setSelectedAirportLabels((prev) => ({ ...prev, destination: '' }));
     setDestinationSuggestions([]);
+    prefillDestinationAirports(place.displayName);
+  };
+
+  const handleFromCitySearch = async (query: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      fromCity: query,
+      originAirport: '',
+    }));
+    setAirportInputs((prev) => ({ ...prev, origin: '' }));
+    setSelectedAirportLabels((prev) => ({ ...prev, origin: '' }));
+
+    if (query.length < 2) {
+      setFromCitySuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/places?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      setFromCitySuggestions(data.data || []);
+    } catch (error) {
+      console.error('Error searching departure cities:', error);
+    }
+  };
+
+  const handleFromCitySelect = (place: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      fromCity: place.displayName,
+      originAirport: '',
+    }));
+    setAirportInputs((prev) => ({ ...prev, origin: '' }));
+    setSelectedAirportLabels((prev) => ({ ...prev, origin: '' }));
+    setFromCitySuggestions([]);
+    prefillOriginAirports(place.displayName);
   };
 
   const handleAirportSearch = async (query: string, type: 'origin' | 'destination') => {
-    if (query.length < 2) {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length < 2) {
       if (type === 'origin') {
         setOriginAirportSuggestions([]);
       } else {
@@ -177,7 +241,7 @@ export default function ItineraryPlanner() {
     }
 
     try {
-      const response = await fetch(`/api/flights/airports?q=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/flights/airports?q=${encodeURIComponent(trimmedQuery)}`);
       const data = await response.json();
 
       if (type === 'origin') {
@@ -190,17 +254,71 @@ export default function ItineraryPlanner() {
     }
   };
 
+  const getAirportDisplayName = (airport: AirportSuggestion) => {
+    const primaryName =
+      airport.detailedName ||
+      (typeof airport.name === 'string' ? airport.name : airport.name?.text) ||
+      'Airport';
+    const location = [airport.address?.cityName, airport.address?.countryName].filter(Boolean).join(', ');
+    return location ? `${primaryName} (${airport.iataCode}) • ${location}` : `${primaryName} (${airport.iataCode})`;
+  };
+
+  const handleAirportInputChange = (value: string, type: 'origin' | 'destination') => {
+    const codeKey = type === 'origin' ? 'originAirport' : 'destinationAirport';
+    setAirportInputs((prev) => ({ ...prev, [type]: value }));
+    setSelectedAirportLabels((prev) => ({ ...prev, [type]: '' }));
+    setFormData((prev) => ({
+      ...prev,
+      [codeKey]: '',
+    }));
+    handleAirportSearch(value, type);
+  };
+
+  const handleAirportInputBlur = (type: 'origin' | 'destination') => {
+    const codeKey = type === 'origin' ? 'originAirport' : 'destinationAirport';
+    const value = airportInputs[type].trim();
+    if (/^[A-Za-z]{3}$/i.test(value)) {
+      const code = value.toUpperCase();
+      setAirportInputs((prev) => ({ ...prev, [type]: code }));
+      setFormData((prev) => ({
+        ...prev,
+        [codeKey]: code,
+      }));
+      setSelectedAirportLabels((prev) => ({ ...prev, [type]: '' }));
+    }
+  };
+
   const handleAirportSelect = (airport: AirportSuggestion, type: 'origin' | 'destination') => {
     const code = airport.iataCode?.toUpperCase();
     if (!code) return;
 
+    const codeKey = type === 'origin' ? 'originAirport' : 'destinationAirport';
+    const label = getAirportDisplayName(airport);
+
+    setAirportInputs((prev) => ({ ...prev, [type]: code }));
+    setFormData((prev) => ({
+      ...prev,
+      [codeKey]: code,
+    }));
+    setSelectedAirportLabels((prev) => ({ ...prev, [type]: label }));
+
     if (type === 'origin') {
-      setFormData({ ...formData, originAirport: code });
       setOriginAirportSuggestions([]);
     } else {
-      setFormData({ ...formData, destinationAirport: code });
       setDestinationAirportSuggestions([]);
     }
+  };
+
+  const prefillDestinationAirports = (cityName: string) => {
+    const trimmed = cityName.trim();
+    if (trimmed.length < 2) return;
+    handleAirportSearch(trimmed, 'destination');
+  };
+
+  const prefillOriginAirports = (cityName: string) => {
+    const trimmed = cityName.trim();
+    if (trimmed.length < 2) return;
+    handleAirportSearch(trimmed, 'origin');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -208,9 +326,25 @@ export default function ItineraryPlanner() {
     setError('');
     setStep('loading');
 
+    if (!formData.fromCity.trim()) {
+      setError('Please enter your departure city.');
+      setStep('input');
+      return;
+    }
+
     const airportCodeRegex = /^[A-Z]{3}$/;
-    const normalizedOriginAirport = (formData.originAirport || '').trim().toUpperCase();
-    const normalizedDestinationAirport = (formData.destinationAirport || '').trim().toUpperCase();
+    let normalizedOriginAirport = (formData.originAirport || '').trim().toUpperCase();
+    let normalizedDestinationAirport = (formData.destinationAirport || '').trim().toUpperCase();
+    const originInputValue = airportInputs.origin.trim();
+    const destinationInputValue = airportInputs.destination.trim();
+
+    if (!normalizedOriginAirport && /^[A-Za-z]{3}$/i.test(originInputValue)) {
+      normalizedOriginAirport = originInputValue.toUpperCase();
+    }
+
+    if (!normalizedDestinationAirport && /^[A-Za-z]{3}$/i.test(destinationInputValue)) {
+      normalizedDestinationAirport = destinationInputValue.toUpperCase();
+    }
 
     if (
       (normalizedOriginAirport && !airportCodeRegex.test(normalizedOriginAirport)) ||
@@ -634,6 +768,46 @@ export default function ItineraryPlanner() {
           <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
             <form onSubmit={handleSubmit}>
               <div className="space-y-6">
+                {/* Departure City */}
+                <div className="relative" ref={fromCityInputRef}>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Departure City *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.fromCity}
+                    onChange={(e) => handleFromCitySearch(e.target.value)}
+                    onBlur={() => {
+                      if (formData.fromCity.trim().length >= 2) {
+                        prefillOriginAirports(formData.fromCity);
+                      }
+                    }}
+                    onFocus={(e) => {
+                      if (e.target.value.length >= 2) {
+                        handleFromCitySearch(e.target.value);
+                      }
+                    }}
+                    placeholder="e.g., Bangkok, New York, Singapore"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                  {fromCitySuggestions.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {fromCitySuggestions.map((place, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleFromCitySelect(place)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="font-medium text-gray-900">{place.displayName}</div>
+                          <div className="text-sm text-gray-500">{place.formattedAddress}</div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* Destination */}
                 <div className="relative" ref={destinationInputRef}>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -644,6 +818,11 @@ export default function ItineraryPlanner() {
                     required
                     value={formData.destination}
                     onChange={(e) => handleDestinationSearch(e.target.value)}
+                    onBlur={() => {
+                      if (formData.destination.trim().length >= 2) {
+                        prefillDestinationAirports(formData.destination);
+                      }
+                    }}
                     onFocus={(e) => {
                       if (e.target.value.length >= 2) {
                         handleDestinationSearch(e.target.value);
@@ -673,22 +852,19 @@ export default function ItineraryPlanner() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="relative" ref={originAirportInputRef}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Departure Airport (IATA)
+                      Departure Airport (City or IATA)
                     </label>
                     <input
                       type="text"
-                      value={formData.originAirport}
-                      onChange={(e) => {
-                        const value = e.target.value.toUpperCase();
-                        setFormData({ ...formData, originAirport: value });
-                        handleAirportSearch(value, 'origin');
-                      }}
+                      value={airportInputs.origin}
+                      onChange={(e) => handleAirportInputChange(e.target.value, 'origin')}
+                      onBlur={() => handleAirportInputBlur('origin')}
                       onFocus={(e) => {
                         if (e.target.value.length >= 2) {
                           handleAirportSearch(e.target.value, 'origin');
                         }
                       }}
-                      placeholder="e.g., JFK"
+                      placeholder="Enter city or airport name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     {originAirportSuggestions.length > 0 && (
@@ -717,25 +893,29 @@ export default function ItineraryPlanner() {
                         })}
                       </div>
                     )}
+                    {selectedAirportLabels.origin && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        Selected: {selectedAirportLabels.origin}
+                      </p>
+                    )}
                   </div>
                   <div className="relative" ref={destinationAirportInputRef}>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Arrival Airport (IATA)
+                      Arrival Airport (City or IATA)
                     </label>
                     <input
                       type="text"
-                      value={formData.destinationAirport}
-                      onChange={(e) => {
-                        const value = e.target.value.toUpperCase();
-                        setFormData({ ...formData, destinationAirport: value });
-                        handleAirportSearch(value, 'destination');
-                      }}
+                      value={airportInputs.destination}
+                      onChange={(e) => handleAirportInputChange(e.target.value, 'destination')}
+                      onBlur={() => handleAirportInputBlur('destination')}
                       onFocus={(e) => {
                         if (e.target.value.length >= 2) {
                           handleAirportSearch(e.target.value, 'destination');
+                        } else if (formData.destination.trim().length >= 2) {
+                          handleAirportSearch(formData.destination, 'destination');
                         }
                       }}
-                      placeholder="e.g., CDG"
+                      placeholder="Enter city or airport name"
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                     />
                     {destinationAirportSuggestions.length > 0 && (
@@ -764,10 +944,15 @@ export default function ItineraryPlanner() {
                         })}
                       </div>
                     )}
+                    {selectedAirportLabels.destination && (
+                      <p className="mt-2 text-sm text-gray-500">
+                        Selected: {selectedAirportLabels.destination}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <p className="text-sm text-gray-500">
-                  Add airport codes to get live flight suggestions via Amadeus (optional but recommended).
+                  Start typing a city or airport and pick from the dropdown to add live Amadeus flight suggestions (optional but recommended).
                 </p>
 
                 {/* Budget */}
