@@ -131,6 +131,8 @@ export default function FlightBookingPage() {
   const outbound = flightData.itineraries[0];
   const returnFlight = flightData.itineraries[1];
   const totalPrice = parseFloat(flightData.price.grandTotal || flightData.price.total);
+  const outboundCarrier = outbound.segments[0];
+  const returnCarrier = returnFlight?.segments[0];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -159,6 +161,11 @@ export default function FlightBookingPage() {
                 <p className="text-sm text-gray-600">
                   Duration: {outbound.duration} • {outbound.segments[0].numberOfStops === 0 ? 'Non-stop' : `${outbound.segments[0].numberOfStops} stop(s)`}
                 </p>
+              {outboundCarrier && (
+                <p className="text-sm text-gray-500">
+                  Flight {outboundCarrier.carrierCode} {outboundCarrier.number}
+                </p>
+              )}
               </div>
 
               {returnFlight && (
@@ -173,6 +180,11 @@ export default function FlightBookingPage() {
                   <p className="text-sm text-gray-600">
                     Duration: {returnFlight.duration} • {returnFlight.segments[0].numberOfStops === 0 ? 'Non-stop' : `${returnFlight.segments[0].numberOfStops} stop(s)`}
                   </p>
+                {returnCarrier && (
+                  <p className="text-sm text-gray-500">
+                    Flight {returnCarrier.carrierCode} {returnCarrier.number}
+                  </p>
+                )}
                 </div>
               )}
 

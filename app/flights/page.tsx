@@ -272,6 +272,8 @@ export default function FlightsPage() {
                 const outbound = flight.itineraries[0];
                 const returnFlight = flight.itineraries[1];
                 const totalPrice = parseFloat(flight.price.grandTotal || flight.price.total);
+                const outboundCarrier = outbound.segments[0];
+                const returnCarrier = returnFlight?.segments[0];
 
                 return (
                   <div key={idx} className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 hover:shadow-2xl transition-all duration-300 border border-white/20 transform hover:-translate-y-1">
@@ -286,6 +288,11 @@ export default function FlightsPage() {
                             <p className="text-sm text-gray-600">
                               {format(new Date(outbound.segments[0].departure.at), 'MMM d, h:mm a')} - {format(new Date(outbound.segments[outbound.segments.length - 1].arrival.at), 'h:mm a')}
                             </p>
+                            {outboundCarrier && (
+                              <p className="text-sm text-gray-500">
+                                Flight {outboundCarrier.carrierCode} {outboundCarrier.number}
+                              </p>
+                            )}
                           </div>
                           {returnFlight && (
                             <div>
@@ -296,6 +303,11 @@ export default function FlightsPage() {
                               <p className="text-sm text-gray-600">
                                 {format(new Date(returnFlight.segments[0].departure.at), 'MMM d, h:mm a')} - {format(new Date(returnFlight.segments[returnFlight.segments.length - 1].arrival.at), 'h:mm a')}
                               </p>
+                              {returnCarrier && (
+                                <p className="text-sm text-gray-500">
+                                  Flight {returnCarrier.carrierCode} {returnCarrier.number}
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>

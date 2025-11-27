@@ -580,6 +580,8 @@ export default function ItineraryPlanner() {
                   const outbound = flight.itineraries[0];
                   const returnFlight = flight.itineraries[1];
                   const totalPrice = parseFloat(flight.price.grandTotal || flight.price.total);
+                  const outboundCarrier = outbound.segments[0];
+                  const returnCarrier = returnFlight?.segments[0];
 
                   return (
                     <div key={flight.id} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
@@ -593,6 +595,11 @@ export default function ItineraryPlanner() {
                             <p className="text-sm text-gray-600">
                               {format(new Date(outbound.segments[0].departure.at), 'MMM d, h:mm a')} • {outbound.duration.replace('PT', '').toLowerCase()}
                             </p>
+                            {outboundCarrier && (
+                              <p className="text-sm text-gray-500">
+                                Flight {outboundCarrier.carrierCode} {outboundCarrier.number}
+                              </p>
+                            )}
                           </div>
                           {returnFlight && (
                             <div>
@@ -603,6 +610,11 @@ export default function ItineraryPlanner() {
                               <p className="text-sm text-gray-600">
                                 {format(new Date(returnFlight.segments[0].departure.at), 'MMM d, h:mm a')} • {returnFlight.duration.replace('PT', '').toLowerCase()}
                               </p>
+                              {returnCarrier && (
+                                <p className="text-sm text-gray-500">
+                                  Flight {returnCarrier.carrierCode} {returnCarrier.number}
+                                </p>
+                              )}
                             </div>
                           )}
                           {typeof flight.numberOfBookableSeats === 'number' && flight.numberOfBookableSeats > 0 && (
